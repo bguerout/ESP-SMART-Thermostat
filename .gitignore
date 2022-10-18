@@ -1,1 +1,4 @@
-.pio
+.pio/
+.idea/
+.env.ini
+.vscode/

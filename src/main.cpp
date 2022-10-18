@@ -25,6 +25,8 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
+// settings managed through a private.ini file
+#include "config.hpp"
 
 //################  VERSION  ###########################################
 String version = "2.0";      // Programme version, see change log at end
@@ -76,8 +78,8 @@ const String data1Colour    = "red";
 const String data2Colour    = "orange";
 
 //################ VARIABLES ################
-const char* ssid       = "XXXX";             // WiFi SSID     replace with details for your local network
-const char* password   = "XXXX";         // WiFi Password replace with details for your local network
+const char* ssid       = THERMOSTAT_WIFI_SSID;             // WiFi SSID     replace with details for your local network
+const char* password   = THERMOSTAT_WIFI_PASSWORD;         // WiFi Password replace with details for your local network
 // Example time zones
 const char* Timezone = "MET-1METDST,M3.5.0/01,M10.5.0/02"; // Most of Europe
 //const char* Timezone   = "GMT0BST,M3.5.0/01,M10.5.0/02";
