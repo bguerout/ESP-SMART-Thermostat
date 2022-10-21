@@ -1,13 +1,14 @@
 # ESP-SMART-Thermostat
-How to use an ESP32 or ESP8266 to create a smart thermostat
 
-An ESP implementation of a smart thermostat or simple ON/OFF timer
+Connect an ESP32 devkit then run 
+
+```sh
+make dev
+```
 
 Access via logical name e.g. http://thermostat.local/
 
-For ESP8266 it requires ESPAsyncTCP to use this library you will need version 2.5.1 of ESP8266 Arduino Core until the issues are fixed with the latest.
 
-For ESP32 it requires AsyncTCP to use this library you may need to have the latest git versions of ESP32 Arduino Core
 
 Comprehensive features:
 1. 7-Day timer and 4 target temperature periods per-day, all adjustable
