@@ -23,8 +23,8 @@
 #include <SPIFFS.h>                    // Built-in
 #include "ESPAsyncWebServer.h"         // https://github.com/me-no-dev/ESPAsyncWebServer/tree/63b5303880023f17e1bca517ac593d8a33955e94
 #include "AsyncTCP.h"                  // https://github.com/me-no-dev/AsyncTCP
-#include <OneWire.h>
-#include <DallasTemperature.h>
+#include <Wire.h>
+#include "SHTSensor.h"
 #include "config.hpp"
 
 //################ CONSTANTS ################
@@ -64,9 +64,7 @@ struct Settings {
 };
 
 //################ VARIABLES ################
-OneWire _oneWire(SENSOR_PIN);
-DallasTemperature _sensors(&_oneWire);
-DeviceAddress _thermometer;
+SHTSensor sht;
 SensorDataType _sensorData[NUM_OF_SENSORS][MAX_SENSOR_READINGS];
 String _sensorReading[NUM_OF_SENSORS][6];    // 254 Sensors max. and 6 Parameters per sensor T, H, Relay-state. Maximum LoRa adress range is 255 - 1 for Server so 0 - 253
 String _time_str, _doW_str;                 // For Date and Time
@@ -102,18 +100,15 @@ AsyncWebServer server(THERMOSTAT_SERVER_PORT); // Server on IP address port 80 (
 //#########################################
 void startSensor() {
   if (!SIMULATING) {                               // If not sensor simulating, then start the real one
+      Wire.begin();
+      delay(1000); // let serial console settle
 
-    _sensors.begin();
-
-   // search for devices on the bus and assign based on an index
-    if (!_sensors.getAddress(_thermometer, 0))
-    {
-        Serial.println("Unable to find address for Device 0");
-    }
-    else {
-      Serial.println("Sensor started...");
-    }
-    delay(1000);                                   // Wait for sensor to start
+       if (sht.init()) {
+            Serial.print("Sensor started...\n");
+        } else {
+            Serial.print("Unable to init sensors\n");
+        }
+        sht.setAccuracy(SHTSensor::SHT_ACCURACY_MEDIUM); // only supported by SHT3x
   }
 }
 
@@ -124,15 +119,19 @@ void readSensor() {
   }
   else
   {
-    _sensors.requestTemperatures();
-    _temperature = _sensors.getTempC(_thermometer);
-    if (_temperature >= 50 || _temperature < -30) _temperature = _lastTemperature; // Check and correct any errorneous readings
-    _lastTemperature = _temperature;
+    if (sht.readSample()) {
+        _humidity = sht.getHumidity();
 
-    _humidity = random(45, 55);
-
-    Serial.println("Temperature = " + String(_temperature, 1) + ", Humidity = " + String(_humidity, 0));
+        _temperature = sht.getTemperature();
+        if (_temperature >= 50 || _temperature < -30){
+            _temperature = _lastTemperature; // Check and correct any errorneous readings
+         }
+        _lastTemperature = _temperature;
+    } else {
+        Serial.print("Error in readSample()\n");
+    }
   }
+  Serial.println("Temperature = " + String(_temperature, 1) + ", Humidity = " + String(_humidity, 0));
 }
 
 void switchRelay(bool demand) {
